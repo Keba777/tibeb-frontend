@@ -50,7 +50,7 @@ export default function RootLayout({
             <Navbar />
 
             {/* Main content */}
-            <main className="flex-1 pb-24 md:pb-0 lg:pr-72">
+            <main className="flex-1 pb-24 md:pb-0">
               {children}
             </main>
 

@@ -33,10 +33,18 @@ export function PDFViewer({ url, initialPage = 1, onPageChange, searchTerm }: PD
     setLoading(true);
     setError(null);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pdfjsLib = await import('pdfjs-dist' as any);
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-      const doc = await pdfjsLib.getDocument(url).promise;
+      const pdfjsLib = await import('pdfjs-dist');
+      // Set worker to the same version as the library
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:9000';
+      const absoluteUrl = url.startsWith('http') ? url : `${API_BASE}${url}`;
+      
+      // Pass withCredentials: true to ensure the session cookie is sent (task 3.2.2 proxy)
+      const doc = await pdfjsLib.getDocument({
+        url: absoluteUrl,
+        withCredentials: true
+      }).promise;
       setPdf(doc);
       setNumPages(doc.numPages);
     } catch {

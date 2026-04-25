@@ -27,6 +27,14 @@ export function useAuth() {
   useEffect(() => {
     if (user) return; // already hydrated
 
+    // Skip profile fetch on public pages to avoid unnecessary 401s
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path === '/login' || path === '/register' || path === '/') {
+        return;
+      }
+    }
+
     api
       .get<User>('/profile')
       .then((u) => setUser(u))

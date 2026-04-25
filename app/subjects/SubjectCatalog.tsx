@@ -20,7 +20,7 @@ export function SubjectCatalog({ subjects }: SubjectCatalogProps) {
   return (
     <div>
       {/* Grade filter — client component, no page reload */}
-      <div className="flex flex-wrap gap-2 mb-8" role="group" aria-label="Filter by grade">
+      <div className="flex flex-wrap justify-center gap-2 mb-8" role="group" aria-label="Filter by grade">
         <button
           onClick={() => setSelectedGrade(null)}
           aria-pressed={selectedGrade === null}
@@ -64,9 +64,11 @@ export function SubjectCatalog({ subjects }: SubjectCatalogProps) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex flex-wrap justify-center gap-6">
           {filtered.map((subject) => (
-            <SubjectCard key={subject.id} subject={subject} />
+            <div key={subject.id} className="w-full sm:w-[280px]">
+              <SubjectCard subject={subject} />
+            </div>
           ))}
         </div>
       )}

@@ -2,7 +2,7 @@ import { SubjectCatalog } from './SubjectCatalog';
 import type { Subject } from '@/src/types';
 import { cookies } from 'next/headers';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:9000';
 
 async function fetchSubjects(cookieHeader: string): Promise<Subject[]> {
   try {
@@ -22,10 +22,12 @@ export default async function SubjectsPage() {
   const subjects = await fetchSubjects(cookieStore.toString());
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="font-headline text-3xl font-extrabold text-primary mb-2">Subjects</h1>
-      <p className="text-on-surface-variant mb-8">Browse the Ethiopian curriculum by grade</p>
-      <SubjectCatalog subjects={subjects} />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col items-center">
+      <h1 className="font-headline text-3xl font-extrabold text-primary mb-2 text-center">Subjects</h1>
+      <p className="text-on-surface-variant mb-8 text-center">Browse the Ethiopian curriculum by grade</p>
+      <div className="w-full">
+        <SubjectCatalog subjects={subjects} />
+      </div>
     </div>
   );
 }

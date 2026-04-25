@@ -1,14 +1,15 @@
 /**
- * Typed fetch wrapper for the Tibeb backend API.
+ * Axios wrapper for the Tibeb backend API.
  *
  * - Sends credentials (httpOnly JWT cookie) with every request.
  * - On 401, redirects to /login (client-side only).
- * - Throws ApiError on non-2xx responses.
+ * - Throws ApiRequestError on non-2xx responses.
  */
 
+import axios, { AxiosError } from 'axios';
 import type { ApiError } from '@/src/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:9000';
 
 export class ApiRequestError extends Error {
   constructor(
@@ -21,47 +22,46 @@ export class ApiRequestError extends Error {
   }
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    credentials: 'include', // send httpOnly JWT cookie
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
+const apiClient = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-  if (res.status === 401) {
-    // Redirect to login on the client side
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<ApiError>) => {
+    if (error.response?.status === 401) {
+      // Redirect to login on the client side, but avoid infinite loops
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+      return Promise.reject(new ApiRequestError(401, 'unauthorized', 'Session expired'));
     }
-    throw new ApiRequestError(401, 'unauthorized', 'Session expired');
-  }
 
-  if (!res.ok) {
-    const body: ApiError = await res.json().catch(() => ({
-      error: 'unknown',
-      message: res.statusText,
-    }));
-    throw new ApiRequestError(res.status, body.error, body.message);
-  }
+    if (error.response) {
+      const { status, data } = error.response;
+      return Promise.reject(
+        new ApiRequestError(
+          status,
+          data?.error || 'unknown',
+          data?.message || (data as unknown as string) || error.message,
+        ),
+      );
+    }
 
-  // 204 No Content
-  if (res.status === 204) return undefined as T;
-
-  return res.json() as Promise<T>;
-}
+    return Promise.reject(error);
+  },
+);
 
 // Convenience methods
 export const api = {
-  get: <T>(path: string) => request<T>(path),
+  get: <T>(path: string) => apiClient.get<T>(path).then((res) => res.data),
   post: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+    apiClient.post<T>(path, body).then((res) => res.data),
   put: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+    apiClient.put<T>(path, body).then((res) => res.data),
+  delete: <T>(path: string) => apiClient.delete<T>(path).then((res) => res.data),
 };

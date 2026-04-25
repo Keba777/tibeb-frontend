@@ -5,7 +5,7 @@ import { StreakCounter } from '@/src/components/StreakCounter';
 import { aggregateWeeklyTotals, formatDuration } from '@/src/utils/dashboard';
 import type { StudyStats, StreakData, Note, Textbook, SubjectExamScore } from '@/src/types';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:9000';
 
 async function serverFetch<T>(path: string, cookieHeader: string): Promise<T | null> {
   try {

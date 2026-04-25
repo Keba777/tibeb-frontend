@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { formatDuration } from '@/src/utils/dashboard';
 import type { StudyStats, StreakData } from '@/src/types';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:9000';
 
 async function fetchData<T>(path: string, cookieHeader: string): Promise<T | null> {
   try {

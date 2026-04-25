@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { use } from 'react';
-import { PDFViewer } from '@/src/components/PDFViewer';
+import { ModernPDFViewer } from '@/src/components/ModernPDFViewer';
 import { Sidebar } from '@/src/components/Sidebar';
 import { api } from '@/src/services/api';
 import type { Textbook, TextbookBookmark } from '@/src/types';
@@ -39,6 +39,12 @@ export default function TextbookPage({ params }: Props) {
     await api.put(`/textbooks/${id}/bookmark`, { page_number: currentPage, is_last_read: true });
     setBookmarked(true);
     setTimeout(() => setBookmarked(false), 2000);
+  };
+
+  const onPageChange = (page: number) => {
+    if (page !== currentPage) {
+      setCurrentPage(page);
+    }
   };
 
   if (!textbook) {
@@ -91,16 +97,21 @@ export default function TextbookPage({ params }: Props) {
           </button>
         </div>
 
-        <PDFViewer
-          url={textbook.fileUrl}
+        <ModernPDFViewer
+          textbookId={textbook.id}
           initialPage={initialPage}
-          onPageChange={setCurrentPage}
-          searchTerm={searchTerm}
+          onPageChange={onPageChange}
         />
       </div>
 
       {/* AI sidebar (task 13.2.9) */}
-      <Sidebar open={aiOpen} onClose={() => setAiOpen(false)} />
+      <Sidebar 
+        open={aiOpen} 
+        onClose={() => setAiOpen(false)} 
+        textbookId={textbook.id}
+        pageStart={currentPage}
+        pageEnd={currentPage}
+      />
     </div>
   );
 }
